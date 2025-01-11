@@ -13,9 +13,9 @@ import { cn } from "@/lib/utils";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AI Companion",
+  title: "Imitate AI",
   description:
-    "AI Companion made using Next.js, React.js, TypeScript, TailwindCSS, Prisma & Stripe."
+    "Imitate AI made using Next.js, React.js, TypeScript, TailwindCSS, Prisma & Stripe."
 };
 
 export default function RootLayout({
