@@ -1,7 +1,6 @@
 import dotenv from "dotenv";
 import { StreamingTextResponse, LangChainStream } from "ai";
-import { auth, currentUser } from "@clerk/nextjs";
-import { CallbackManager } from "langchain/callbacks";
+import { currentUser } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
 
 import Replicate from "replicate"; // Use Replicate's official SDK
@@ -81,8 +80,8 @@ export async function POST(
       auth: process.env.REPLICATE_API_TOKEN || "",
     });
 
-    console.log("Sending response to Replicate !")   
-    
+    console.log("Sending response to Replicate !")
+
     const response = await replicate.run(
       "a16z-infra/llama-2-13b-chat:df7690f1994d94e96ad9d568eac121aecf50684a0b0963b25a41cc40061269e5",
       {
@@ -97,16 +96,16 @@ export async function POST(
             ${relevantHistory}
             
             ${recentChatHistory}\n${companion.name}:`,
-          },
-        }
-      );
-      console.log("received response from Replicate !" , response)   
-      
-      const cleaned = String(response).replaceAll(",", "");
-      const chunks = cleaned.split("\n");
-      const finalResponse = chunks[0];
-      
-      await memoryManager.writeToHistory("" + finalResponse.trim(), companionKey);
+        },
+      }
+    );
+    console.log("received response from Replicate !", response)
+
+    const cleaned = String(response).replaceAll(",", "");
+    const chunks = cleaned.split("\n");
+    const finalResponse = chunks[0];
+
+    await memoryManager.writeToHistory("" + finalResponse.trim(), companionKey);
 
     var Readable = require("stream").Readable;
 
