@@ -117,10 +117,14 @@ export async function POST(
               temperature: 0.7,
               top_p: 0.9,
               prompt: `
-                ONLY generate plain sentences without prefix of who is speaking. DO NOT use ${companion.name}: prefix. 
+                ONLY generate plain sentences without prefix of who is speaking. DO NOT use ${companion.name}: prefix.
+                Also , donot say that Hello! As a helpful and respectful assistant I can assure you that I am not the real ${companion.name}. 
+                Act as of you the ${companion.name}
                 ${companion.instructions}
+
                 Below are relevant details about ${companion.name}'s past and the conversation you are in.
                 ${relevantHistory}
+                
                 ${await memoryManager.readLatestHistory(companionKey)}\n${companion.name}:`
             }
           }
