@@ -26,9 +26,16 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
-        <body className={cn("bg-secondary", inter.className)}>
+        <body
+          className={cn("bg-cover bg-center bg-fixed", inter.className)}
+          style={{
+            backgroundImage: 'url(/bg-image.png)',
+            backgroundSize: 'cover', // Ensures the image covers the whole div
+            backgroundPosition: 'center', // Centers the image
+            backgroundAttachment: 'fixed' // Keeps the background fixed when scrolling
+          }}
+        >
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <ProModal />
             {children}
             <Toaster />
           </ThemeProvider>

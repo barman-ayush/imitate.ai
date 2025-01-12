@@ -29,6 +29,7 @@ export default function ChatForm({
     <form
       onSubmit={onSubmit}
       className="border-t border-primary/10 py-4 flex items-center gap-x-2"
+      style={{backdropFilter : "blur(10px)"}}
     >
       <Input
         disabled={isLoading}

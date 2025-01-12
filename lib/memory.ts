@@ -53,7 +53,6 @@ export class MemoryManager {
     return similarDocs;
   }
 
-  // Rest of the class remains the same...
   public static async getInstance(): Promise<MemoryManager> {
     if (!MemoryManager.instance) {
       MemoryManager.instance = new MemoryManager();

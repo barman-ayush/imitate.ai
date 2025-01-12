@@ -13,7 +13,10 @@ export default async function RootLayout({
   const isPro = await checkSubscription();
 
   return (
-    <div className="h-full">
+    <div
+      className="h-full bg-cover bg-center"
+      // style={{ backgroundImage: 'url(/bg-image.png)' }}
+    >
       <Navbar isPro={isPro} />
       <div className="hidden md:flex mt-16 w-20 flex-col fixed inset-y-0">
         <Sidebar isPro={isPro} />

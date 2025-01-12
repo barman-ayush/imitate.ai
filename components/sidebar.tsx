@@ -28,12 +28,6 @@ export default function Sidebar({ isPro }: SidebarProps) {
       href: "/companion/new",
       label: "Create",
       pro: false
-    },
-    {
-      icon: Settings,
-      href: "/settings",
-      label: "Settings",
-      pro: false
     }
   ];
 
@@ -44,7 +38,7 @@ export default function Sidebar({ isPro }: SidebarProps) {
   };
 
   return (
-    <div className="space-y-4 flex flex-col h-full text-primary bg-secondary">
+    <div className="space-y-4 flex flex-col h-full text-primary">
       <div className="p-3 flex-1 flex justify-center">
         <div className="space-y-2">
           {routes.map((route) => (

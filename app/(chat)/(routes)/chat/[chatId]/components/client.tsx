@@ -53,7 +53,7 @@ export default function ChatClient({ companion }: ChatClientProps) {
   };
 
   return (
-    <div className="flex flex-col h-full p-4 space-y-2">
+    <div className="flex flex-col h-full p-4 space-y-2" style={{backdropFilter : "blur(10px)"}}>
       <ChatHeader companion={companion} />
       <ChatMessages
         companion={companion}

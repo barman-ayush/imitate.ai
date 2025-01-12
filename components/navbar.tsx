@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
 import MobileSidebar from "@/components/mobile-sidebar";
 
+import bgImage from "../public/bg-image.png"
+
 const font = Poppins({
   weight: "600",
   subsets: ["latin"]
@@ -26,7 +28,7 @@ export default function Navbar({ isPro }: NavbarProps) {
   const proModal = useProModal();
 
   return (
-    <div className="fixed w-full z-50 flex justify-between items-center py-2 px-4 h-16 border-b border-primary/10 bg-secondary">
+    <div className="fixed w-full z-50 flex justify-between items-center py-2 px-4 h-16 border-b border-primary/10" style={{backdropFilter : "blur(10px)"}}>
       <div className="flex items-center">
         <MobileSidebar isPro={isPro} />
         <Link href="/">
@@ -36,18 +38,12 @@ export default function Navbar({ isPro }: NavbarProps) {
               font.className
             )}
           >
-            imitate.ai
+            arcana.ai
           </h1>
         </Link>
       </div>
       <div className="flex items-center gap-x-3">
-        {/* {!isPro && (
-          <Button size="sm" variant="premium" onClick={proModal.onOpen}>
-            Upgrade
-            <Sparkles className="h-4 w-4 fill-white text-white ml-2" />
-          </Button>
-        )} */}
-        <ModeToggle />
+        {/* <ModeToggle /> */}
         <UserButton afterSignOutUrl="/" />
       </div>
     </div>
