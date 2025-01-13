@@ -26,7 +26,10 @@ export const ImageUpload = ({
   return (
     <div className="space-y-4 w-full flex flex-col justify-center items-center">
       <CldUploadButton
-        onUpload={(result: any) => onChange(result.info.secure_url)}
+        onUpload={(result: any) => {
+          console.log("Uplaoded", result);
+          onChange(result.info.secure_url);
+        }}
         uploadPreset="o2id1jk6"
         options={{ maxFiles: 1 }}
       >

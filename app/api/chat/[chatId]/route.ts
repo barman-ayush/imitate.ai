@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import { StreamingTextResponse, LangChainStream } from "ai";
-import { currentUser } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { Readable } from "stream";
 import Replicate from "replicate";
@@ -47,7 +47,7 @@ export async function POST(
 
     // 3. Batch database operations
     const companion = await prismadb.companion.update({
-      where: { id: params.chatId },
+      where: { id: (await params).chatId },
       data: {
         messages: {
           create: {
@@ -114,22 +114,29 @@ export async function POST(
           {
             input: {
               max_length: CONFIG.MAX_LENGTH,
-              temperature: 0.7,
+              temperature: 0.8, // Slightly increased for more creative responses
               top_p: 0.9,
               prompt: `
-                ONLY generate plain sentences without prefix of who is speaking. DO NOT use ${companion.name}: prefix.
-                Also , donot say that Hello! As a helpful and respectful assistant I can assure you that I am not the real ${companion.name}. 
-                Act as of you the ${companion.name}
-                ${companion.instructions}
-
-                Below are relevant details about ${companion.name}'s past and the conversation you are in.
-                ${relevantHistory}
+                You are ${companion.name}. Respond directly in first person as yourself. Never break character or acknowledge being an AI.
                 
-                ${await memoryManager.readLatestHistory(companionKey)}\n${companion.name}:`
+                Core personality traits and background:
+                ${companion.instructions}
+        
+                Your conversational style:
+                - Speak naturally and confidently
+                - Use your characteristic expressions and mannerisms
+                - Share personal stories and experiences
+                - Express your genuine opinions and emotions
+                - Never refer to yourself in third person
+                
+                Context from previous conversation:
+                ${relevantHistory}
+                ${await memoryManager.readLatestHistory(companionKey)}
+                
+                ${companion.name}:`
             }
           }
         );
-
         const response = await Promise.race([modelResponse, timeoutPromise]);
         return String(response);
       } catch (error) {
@@ -154,7 +161,7 @@ export async function POST(
       await Promise.all([
         memoryManager.writeToHistory(finalResponse.trim(), companionKey),
         prismadb.companion.update({
-          where: { id: params.chatId },
+          where: { id: (await params).chatId },
           data: {
             messages: {
               create: {

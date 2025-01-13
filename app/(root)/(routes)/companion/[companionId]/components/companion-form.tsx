@@ -65,7 +65,7 @@ const formSchema = z.object({
   seed: z.string().min(200, {
     message: "Seed requires at least 200 characters."
   }),
-  src: z.string().min(1, {
+  src: z.string().min(0, {
     message: "Image is Required."
   }),
   categoryId: z.string().min(1, {

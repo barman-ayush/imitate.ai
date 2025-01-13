@@ -2,7 +2,6 @@ import { currentUser, auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import prismadb from "@/lib/prismadb";
-import { checkSubscription } from "@/lib/subscription";
 
 export async function PATCH(
   req: Request,
@@ -13,7 +12,7 @@ export async function PATCH(
     const user = await currentUser();
     const { src, name, description, instructions, seed, categoryId } = body;
 
-    console.log(name , src)
+    console.log(name, src)
 
     if (!params.companionId) {
       return new NextResponse("Companion ID is Required.", { status: 400 });
@@ -63,7 +62,8 @@ export async function DELETE(
   { params }: { params: { companionId: string } }
 ) {
   try {
-    const { userId } = auth();
+    const session = await auth();
+    const userId = session?.userId;
 
     if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 

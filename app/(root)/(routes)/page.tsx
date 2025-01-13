@@ -16,9 +16,9 @@ interface RootPageProps {
 export default async function RootPage({ searchParams }: RootPageProps) {
   const data = await prismadb.companion.findMany({
     where: {
-      categoryId: searchParams.categoryId,
+      categoryId: (await searchParams).categoryId,
       name: {
-        search: searchParams.name
+        search: (await searchParams).name
       }
     },
     orderBy: {
