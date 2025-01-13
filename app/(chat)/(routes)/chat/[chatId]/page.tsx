@@ -18,7 +18,7 @@ export default async function ChatIdPage({ params }: ChatIdPageProps) {
 
   const companion = await prismadb.companion.findUnique({
     where: { 
-      id: (await params).chatId 
+      id: params.chatId 
     },
     include: {
       messages: {

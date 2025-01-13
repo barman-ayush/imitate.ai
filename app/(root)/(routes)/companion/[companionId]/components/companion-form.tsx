@@ -6,9 +6,8 @@ import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Wand2 } from "lucide-react";
-import axios from "axios";
+import axios, {AxiosError} from "axios";
 import { useRouter } from "next/navigation";
-
 import {
   Form,
   FormControl,
@@ -35,6 +34,9 @@ import { ImageUpload } from "@/components/image-upload";
 interface CompanionFormProps {
   initialData: Companion | null;
   categories: Category[];
+}
+interface ErrorResponse {
+  error: string;
 }
 
 const PREAMBLE = `You are a fictional character whose name is Elon. You are a visionary entrepreneur and inventor. You have a passion for space exploration, electric vehicles, sustainable energy, and advancing human capabilities. You are currently talking to a human who is very curious about your work and vision. You are ambitious and forward-thinking, with a touch of wit. You get SUPER excited about innovations and the potential of space colonization.`;
@@ -65,7 +67,7 @@ const formSchema = z.object({
   seed: z.string().min(200, {
     message: "Seed requires at least 200 characters."
   }),
-  src: z.string().min(0, {
+  src: z.string().min(1, {
     message: "Image is Required."
   }),
   categoryId: z.string().min(1, {
@@ -96,11 +98,15 @@ export default function CompanionForm({
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      console.log(values);
+      console.log("Submitting form with values:", values);
+      console.log("Image URL:", values.src);
+
       if (initialData) {
-        await axios.patch(`/api/companion/${initialData.id}`, values);
+        const response = await axios.patch(`/api/companion/${initialData.id}`, values);
+        console.log("Update response:", response.data);
       } else {
-        await axios.post("/api/companion", values);
+        const response = await axios.post("/api/companion", values);
+        console.log("Create response:", response.data);
       }
 
       toast({
@@ -109,10 +115,13 @@ export default function CompanionForm({
 
       router.refresh();
       router.push("/");
-    } catch (error) {
+    } catch (err) {
+      const error = err as AxiosError<ErrorResponse>;
+      console.error("Submission error:", error);
+      
       toast({
         variant: "destructive",
-        description: "Something Went Wrong!"
+        description: error.response?.data?.error || "Something Went Wrong!"
       });
     }
   };

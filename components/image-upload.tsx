@@ -26,12 +26,12 @@ export const ImageUpload = ({
   return (
     <div className="space-y-4 w-full flex flex-col justify-center items-center">
       <CldUploadButton
-        onUpload={(result: any) => {
-          console.log("Uplaoded", result);
-          onChange(result.info.secure_url);
+        onSuccess={(result: any) => {
+          if (result?.info?.secure_url) {
+            onChange(result.info.secure_url);
+          }
         }}
         uploadPreset="o2id1jk6"
-        options={{ maxFiles: 1 }}
       >
         <div className="p-4 border-4 border-dashed border-primary/10 rounded-lg hover:opacity-75 transition flex flex-col space-y-2 items-center justify-center">
           <div className="relative h-40 w-40">
@@ -40,6 +40,8 @@ export const ImageUpload = ({
               alt="Upload"
               src={value || "/placeholder.svg"}
               className="rounded-lg object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              priority
             />
           </div>
         </div>

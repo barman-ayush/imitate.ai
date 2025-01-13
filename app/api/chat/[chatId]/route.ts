@@ -47,7 +47,7 @@ export async function POST(
 
     // 3. Batch database operations
     const companion = await prismadb.companion.update({
-      where: { id: (await params).chatId },
+      where: { id: params.chatId },
       data: {
         messages: {
           create: {
