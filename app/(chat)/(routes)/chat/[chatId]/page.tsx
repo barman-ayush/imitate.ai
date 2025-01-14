@@ -5,11 +5,18 @@ import { redirect } from "next/navigation";
 import prismadb from "@/lib/prismadb";
 import ChatClient from "./components/client";
 
+// Update the type definition to match Next.js page props
 interface ChatIdPageProps {
-  params: { chatId: string };
+  params: {
+    chatId: string;
+  };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export default async function ChatIdPage({ params }: ChatIdPageProps) {
+const ChatIdPage = async ({
+  params,
+  searchParams,
+}: ChatIdPageProps) => {
   const { userId } = await auth();
 
   if (!userId) {
@@ -44,4 +51,6 @@ export default async function ChatIdPage({ params }: ChatIdPageProps) {
   return (
     <ChatClient companion={companion} />
   );
-}
+};
+
+export default ChatIdPage;
