@@ -11,6 +11,41 @@ interface ChatMessagesProps {
   companion: Companion;
 }
 
+const transformTextToEmoji = (inputText: string | undefined): string => {
+  const reactionToEmoji: Record<string, string> = {
+    smirks: "😏",
+    smiles: "😊",
+    laughs: "😄",
+    grins: "😁",
+    frowns: "☹",
+    cries: "😢",
+    winks: "😉",
+    sighs: "😮‍💨",
+    "rolls eyes": "🙄",
+    shrugs: "🤷",
+    nods: "🙂",
+    gasps: "😮",
+    yawns: "🥱",
+    blushes: "😊",
+    "adjusts glasses" : "😎",
+    "leaning in" : "🤔",
+    "excitedly" : "🤓"
+  };
+  if (!inputText) return "";
+
+  const reactionPattern = new RegExp(
+    `\\*?(${Object.keys(reactionToEmoji).join("|")})\\*?`,
+    "gi"
+  );
+
+  return inputText.replace(reactionPattern, (match, reaction) => {
+    const cleanReaction = reaction.toLowerCase();
+    return reactionToEmoji[cleanReaction] || match;
+  });
+};
+
+
+
 export default function ChatMessages({
   companion,
   isLoading,
@@ -48,7 +83,7 @@ export default function ChatMessages({
         <ChatMessage
           key={message.content}
           role={message.role}
-          content={message.content}
+          content={ transformTextToEmoji(message.content)}
           src={companion.src}
         />
       ))}

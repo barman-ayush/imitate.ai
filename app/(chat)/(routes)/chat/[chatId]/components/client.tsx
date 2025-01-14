@@ -19,6 +19,11 @@ interface ChatClientProps {
   };
 }
 
+interface TextToEmojiProps {
+  text: string;
+}
+
+
 export default function ChatClient({ companion }: ChatClientProps) {
   const router = useRouter();
   const [messages, setMessages] = useState<ChatMessageProps[]>(
@@ -33,6 +38,8 @@ export default function ChatClient({ companion }: ChatClientProps) {
           role: "system",
           content: completion
         };
+
+        console.log("System Message" , systemMessage);
 
         setMessages((current) => [...current, systemMessage]);
         setInput("");
@@ -53,7 +60,10 @@ export default function ChatClient({ companion }: ChatClientProps) {
   };
 
   return (
-    <div className="flex flex-col h-full p-4 space-y-2" style={{backdropFilter : "blur(10px)"}}>
+    <div
+      className="flex flex-col h-full p-4 space-y-2"
+      style={{ backdropFilter: "blur(10px)" }}
+    >
       <ChatHeader companion={companion} />
       <ChatMessages
         companion={companion}
