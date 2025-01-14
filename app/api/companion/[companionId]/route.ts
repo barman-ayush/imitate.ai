@@ -5,7 +5,7 @@ import prismadb from "@/lib/prismadb";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { companionId: string } }
+  { params }: { params: any }
 ) {
   try {
     const body = await req.json();
@@ -59,7 +59,7 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { companionId: string } }
+  { params }: { params: any }
 ) {
   try {
     const session = await auth();
