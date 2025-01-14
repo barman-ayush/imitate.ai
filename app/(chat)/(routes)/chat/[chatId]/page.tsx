@@ -6,7 +6,7 @@ import ChatClient from "./components/client";
 import { RedirectToSignIn } from "@clerk/nextjs";
 
 interface ChatIdPageProps {
-  params: { chatId: string };
+  params: any
 }
 
 export default async function ChatIdPage({ params }: ChatIdPageProps) {
@@ -22,7 +22,7 @@ export default async function ChatIdPage({ params }: ChatIdPageProps) {
 
   // Fetch the companion from the database
   const companion = await prismadb.companion.findUnique({
-    where: { id: params.chatId },
+    where: { id: (await params).chatId },
     include: {
       messages: {
         orderBy: { createdAt: "asc" },
