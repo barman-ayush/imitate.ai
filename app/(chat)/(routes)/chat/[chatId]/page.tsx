@@ -4,53 +4,31 @@ import { redirect } from "next/navigation";
 
 import prismadb from "@/lib/prismadb";
 import ChatClient from "./components/client";
+import { RedirectToSignIn } from "@clerk/nextjs";
 
-// Update the type definition to match Next.js page props
 interface ChatIdPageProps {
-  params: {
-    chatId: string;
-  };
-  searchParams?: { [key: string]: string | string[] | undefined };
+  params: { chatId: string };
 }
 
-const ChatIdPage = async ({
-  params,
-  searchParams,
-}: ChatIdPageProps) => {
-  const { userId } = await auth();
+export default async function ChatIdPage({ params }: ChatIdPageProps) {
+  // const { userId } = auth();
+  const session = auth();
+  const userId = (await session).userId;
 
-  if (!userId) {
-    return redirect('/sign-in');
-  }
+  if (!userId)
+    return RedirectToSignIn({
+      redirectUrl: `/chat/${params.chatId}`
+    });
 
   const companion = await prismadb.companion.findUnique({
-    where: { 
-      id: params.chatId 
-    },
+    where: { id: params.chatId },
     include: {
-      messages: {
-        orderBy: { 
-          createdAt: "asc" 
-        },
-        where: { 
-          userId: userId 
-        }
-      },
-      _count: {
-        select: { 
-          messages: true 
-        }
-      }
+      messages: { orderBy: { createdAt: "asc" }, where: { userId } },
+      _count: { select: { messages: true } }
     }
   });
 
-  if (!companion) {
-    return redirect("/");
-  }
+  if (!companion) return redirect("/");
 
-  return (
-    <ChatClient companion={companion} />
-  );
-};
-
-export default ChatIdPage;
+  return <ChatClient companion={companion} />;
+}
