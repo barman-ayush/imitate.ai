@@ -1,4 +1,3 @@
-import React from "react";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
@@ -11,24 +10,34 @@ interface ChatIdPageProps {
 }
 
 export default async function ChatIdPage({ params }: ChatIdPageProps) {
-  // const { userId } = auth();
+  // Retrieve the user's session
   const session = auth();
-  const userId = (await session).userId;
+  const userId = (await session)?.userId;
 
-  if (!userId)
-    return RedirectToSignIn({
-      redirectUrl: `/chat/${params.chatId}`
-    });
+  // If user is not authenticated, redirect them to the sign-in page
+  if (!userId) {
+    redirect(`/sign-in?redirectUrl=/chat/${params.chatId}`);
+    return null; // Required as we have redirected
+  }
 
+  // Fetch the companion from the database
   const companion = await prismadb.companion.findUnique({
     where: { id: params.chatId },
     include: {
-      messages: { orderBy: { createdAt: "asc" }, where: { userId } },
-      _count: { select: { messages: true } }
-    }
+      messages: {
+        orderBy: { createdAt: "asc" },
+        where: { userId },
+      },
+      _count: { select: { messages: true } },
+    },
   });
 
-  if (!companion) return redirect("/");
+  // If no companion is found, redirect to the homepage
+  if (!companion) {
+    redirect("/");
+    return null; // Required as we have redirected
+  }
 
+  // Render the chat client with the companion data
   return <ChatClient companion={companion} />;
 }
