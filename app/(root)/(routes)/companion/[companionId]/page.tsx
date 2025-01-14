@@ -22,7 +22,7 @@ export default async function CompanionIdPage({
   try {
     const companion = await prismadb.companion.findUnique({
       where: {
-        id: params.companionId,
+        id: (await params).companionId,
         userId
       }
     });

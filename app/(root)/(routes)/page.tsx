@@ -7,7 +7,10 @@ import prismadb from "@/lib/prismadb";
 import Companions from "@/components/companions";
 
 interface RootPageProps {
-  searchParams: any
+  searchParams: {
+    categoryId: string;
+    name: string;
+  };
 }
 
 export default async function RootPage({ searchParams }: RootPageProps) {

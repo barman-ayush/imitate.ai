@@ -70,7 +70,7 @@ export async function DELETE(
     const companion = await prismadb.companion.delete({
       where: {
         userId,
-        id: params.companionId
+        id: (await params).companionId
       }
     });
 
