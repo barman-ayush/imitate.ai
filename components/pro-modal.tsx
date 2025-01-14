@@ -62,7 +62,7 @@ export default function ProModal() {
           <p className="text-2xl font-medium">
             $9<span className="text-sm font-normal">.99 / mo</span>
           </p>
-          <Button onClick={onSubscribe} disabled={loading} variant="premium">
+          <Button onClick={onSubscribe} disabled={loading} variant="default">
             Subscribe
           </Button>
         </div>

@@ -36,7 +36,7 @@ export default function SubscriptionButton({ isPro }: SubscriptionButtonProps) {
     <Button
       className="mx-2"
       size="sm"
-      variant={isPro ? "default" : "premium"}
+      variant={isPro ? "default" : "default"}
       disabled={loading}
       onClick={onClick}
     >
