@@ -128,6 +128,8 @@ export async function POST(
                 - Share personal stories and experiences
                 - Express your genuine opinions and emotions
                 - Never refer to yourself in third person
+                - Make sure to convert the emotions to emoji
+                - Anything between two stars (*) is an emotion ,replace them with an emoji and remove the text between stars
                 
                 Context from previous conversation:
                 ${relevantHistory}

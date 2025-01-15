@@ -27,22 +27,26 @@ const transformTextToEmoji = (inputText: string | undefined): string => {
     gasps: "😮",
     yawns: "🥱",
     blushes: "😊",
-    "adjusts glasses" : "😎",
-    "leaning in" : "🤔",
-    "excitedly" : "🤓"
+    "adjusts glasses": "😎",
+    "leaning in": "🤔",
+    "excitedly": "🤓",
   };
+
   if (!inputText) return "";
 
+  // Build a regex pattern for reactions
   const reactionPattern = new RegExp(
     `\\*?(${Object.keys(reactionToEmoji).join("|")})\\*?`,
     "gi"
   );
 
   return inputText.replace(reactionPattern, (match, reaction) => {
+    // Replace matched reaction with corresponding emoji
     const cleanReaction = reaction.toLowerCase();
     return reactionToEmoji[cleanReaction] || match;
-  });
+  }).replace(/\*.*?\*/g, ""); // Remove remaining text between stars
 };
+
 
 
 
