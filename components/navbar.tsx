@@ -48,7 +48,7 @@ export default function Navbar({ isPro }: NavbarProps) {
               font.className
             )}
           >
-            arcana.ai
+            Arcana AI
           </h1>
         </Link>
       </div>
