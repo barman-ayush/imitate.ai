@@ -13,9 +13,12 @@ import { cn } from "@/lib/utils";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Imitate AI",
+  title: "Arcana AI",
   description:
-    "Imitate AI made using Next.js, React.js, TypeScript, TailwindCSS, Prisma & Stripe."
+    "Arcana AI is your gateway to AI-driven innovation. We craft intelligent models that resonate like legends, redefining interactions. From deploying AI agents to decoding meme coins and analyzing wallets",
+  icons: {
+    icon: "./logo.png"
+  }
 };
 
 export default function RootLayout({
@@ -26,13 +29,17 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
+        <head>
+          <link rel="shortcut icon" href="/logo.png" />
+          <link rel="icon" type="image/x-icon" href="/logo.png" />
+        </head>
         <body
           className={cn("bg-cover bg-center bg-fixed", inter.className)}
           style={{
-            backgroundImage: 'url(/bg-image.png)',
-            backgroundSize: 'cover', // Ensures the image covers the whole div
-            backgroundPosition: 'center', // Centers the image
-            backgroundAttachment: 'fixed' // Keeps the background fixed when scrolling
+            backgroundImage: "url(/bg-image.png)",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundAttachment: "fixed"
           }}
         >
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
