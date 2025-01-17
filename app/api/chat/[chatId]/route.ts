@@ -1,4 +1,3 @@
-
 import dotenv from "dotenv";
 import { StreamingTextResponse } from "ai";
 import { currentUser } from "@clerk/nextjs/server";
@@ -37,10 +36,14 @@ export async function POST(request: Request, { params }: { params: any }) {
       return new NextResponse("Rate limit exceeded", { status: 429 });
     }
 
+    // Load companion and ALL related messages for the current user
     const companion = await prismadb.companion.findUnique({
       where: { id: params.chatId },
       include: {
         messages: {
+          where: {
+            userId: user.id // Filter messages for current user
+          },
           orderBy: {
             createdAt: "desc"
           },
@@ -53,8 +56,17 @@ export async function POST(request: Request, { params }: { params: any }) {
       return new NextResponse("Companion not found", { status: 404 });
     }
 
+
+    await prismadb.message.create({
+      data: {
+        content: prompt,
+        role: "user",
+        userId: user.id,
+        companionId: companion.id
+      }
+    });
     // Analyze recent messages for patterns
-    const recentMessages = companion.messages;
+    const recentMessages = companion.messages || [];
     const similarMessages = recentMessages.filter((msg) => {
       if (!msg.content) return false;
 
@@ -96,8 +108,9 @@ export async function POST(request: Request, { params }: { params: any }) {
       // Calculate similarity ratio
       const similarity =
         commonWords / Math.max(msgWords.length, promptWords.length);
-      return similarity > 0.6; // Messages are considered similar if they share more than 60% of words
+      return similarity > 0.6;
     });
+
     // Determine conversation context
     const isRepetitive = similarMessages.length > 0;
     const lastResponse = similarMessages[0]?.content || "";
@@ -128,6 +141,12 @@ export async function POST(request: Request, { params }: { params: any }) {
     const relevantHistory = similarDocs?.length
       ? similarDocs.map((doc) => doc.pageContent).join("\n")
       : "";
+
+    // Format message history for the prompt
+    const messageHistory = recentMessages
+      .map((msg) => `${msg.role === 'user' ? 'User' : companion.name}: ${msg.content}`)
+      .reverse()
+      .join("\n");
 
     // Generate response with context-aware instructions
     const replicate = new Replicate({
@@ -180,8 +199,8 @@ export async function POST(request: Request, { params }: { params: any }) {
         : ""
     }
     
-    Previous messages:
-    ${recentMessages.map((m) => `${m.role}: ${m.content}`).join("\n")}
+    Previous conversation:
+    ${messageHistory}
     
     Context:
     ${relevantHistory}

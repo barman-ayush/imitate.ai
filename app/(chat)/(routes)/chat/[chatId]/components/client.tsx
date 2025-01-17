@@ -38,10 +38,11 @@ export default function ChatClient({ companion }: ChatClientProps) {
           role: "system",
           content: completion
         };
-
+        console.log("Here in useCompletion Hook")
         console.log("System Message" , systemMessage);
 
         setMessages((current) => [...current, systemMessage]);
+        console.log(messages)
         setInput("");
 
         router.refresh();

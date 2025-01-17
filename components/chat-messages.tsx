@@ -66,6 +66,8 @@ export default function ChatMessages({
       setFakeLoading(false);
     }, 1000);
 
+    console.log("From Message" , messages)
+
     return () => {
       clearTimeout(timeout);
     };
@@ -83,9 +85,9 @@ export default function ChatMessages({
         role="system"
         content={`Hello, I'm ${companion.name}, ${companion.description}.`}
       />
-      {messages.map((message) => (
+      {messages.map((message , index) => (
         <ChatMessage
-          key={message.content}
+          key={index}
           role={message.role}
           content={ transformTextToEmoji(message.content)}
           src={companion.src}
