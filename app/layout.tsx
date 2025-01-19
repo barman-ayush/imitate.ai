@@ -1,21 +1,16 @@
 import "./globals.css";
-
-import type { Metadata } from "next";
+import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { Inter } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
-
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 import ProModal from "@/components/pro-modal";
-
 import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Arcana AI",
-  description:
-    "Arcana AI is your gateway to AI-driven innovation. We craft intelligent models that resonate like legends, redefining interactions. From deploying AI agents to decoding meme coins and analyzing wallets",
+  description: "Arcana AI is your gateway to AI-driven innovation...",
   icons: {
     icon: "./logo.png"
   }
@@ -45,6 +40,7 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}
             <Toaster />
+            <ProModal />
           </ThemeProvider>
         </body>
       </html>

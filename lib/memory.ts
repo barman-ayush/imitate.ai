@@ -14,11 +14,18 @@ export class MemoryManager {
   private static instance: MemoryManager;
   private history: Redis;
   private vectorDBClient: Pinecone;
+  private vectorStoreCache: Map<string, any>; // Cache for vector stores
+  private embeddings: GoogleGenerativeAIEmbeddings;
 
   public constructor() {
     this.history = Redis.fromEnv();
     this.vectorDBClient = new Pinecone({
       apiKey: process.env.PINECONE_API_KEY!,
+    });
+    this.vectorStoreCache = new Map();
+    this.embeddings = new GoogleGenerativeAIEmbeddings({
+      apiKey: process.env.GOOGLE_API_KEY!,
+      modelName: "embedding-001"
     });
   }
 
@@ -32,24 +39,50 @@ export class MemoryManager {
     const pineconeIndex = this.vectorDBClient.Index(
       process.env.PINECONE_INDEX! || "companion"
     );
-
+  
     const embeddings = new GoogleGenerativeAIEmbeddings({
       apiKey: process.env.GOOGLE_API_KEY!,
       modelName: "embedding-001"
     });
-
+  
     const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
       pineconeIndex,
       namespace: companionFileName,
     });
-
+  
+    // Helper function to truncate text to stay within byte limit
+    const truncateText = (text: string, maxBytes: number = 9700): string => {
+      const encoder = new TextEncoder();
+      const encoded = encoder.encode(text);
+      if (encoded.length <= maxBytes) return text;
+      
+      // Binary search for the largest substring that fits
+      let start = 0;
+      let end = text.length;
+      while (start < end - 1) {
+        const mid = Math.floor((start + end) / 2);
+        if (encoder.encode(text.slice(0, mid)).length <= maxBytes) {
+          start = mid;
+        } else {
+          end = mid;
+        }
+      }
+      return text.slice(0, start);
+    };
+  
+    // Truncate the chat history before search
+    const truncatedHistory = truncateText(recentChatHistory);
+  
+    // Improved similarity search with more context and better threshold
     const similarDocs = await vectorStore
-      .similaritySearch(recentChatHistory, 3)
+      .similaritySearch(truncatedHistory, 5, {
+        minSimilarity: 0.7
+      })
       .catch((err) => {
         console.error("Failed to Get Vector Search Results.", err);
         return [];
       });
-
+  
     return similarDocs;
   }
 
@@ -91,7 +124,7 @@ export class MemoryManager {
       byScore: true
     });
 
-    result = result.slice(-30).reverse();
+    result = result.slice(-100).reverse();
     const recentChats = result.reverse().join("\n");
     return recentChats;
   }

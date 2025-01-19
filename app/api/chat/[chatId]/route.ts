@@ -7,20 +7,64 @@ import { MemoryManager } from "@/lib/memory";
 import { ratelimit } from "@/lib/rate-limit";
 import prismadb from "@/lib/prismadb";
 
+interface ChatRouteParams {
+  params: {
+    chatId: string
+  }
+}
+
+const createPromptTemplate = (
+  name: string,
+  instructions: string,
+  messageHistory: string,
+  isRepetitive: boolean,
+  lastResponse: string,
+  prompt: string
+) => {
+  // Extract last 5 messages from messageHistory
+  const recentMessages = messageHistory.split('\n')
+    .slice(-10)  // Get last 10 lines to ensure we get ~5 messages
+    .filter(line => line.trim().length > 0)
+    .slice(-5);  // Take last 5 actual messages
+
+  return `<|system|>
+You are ${name}. Stay focused on the current topic of discussion.
+
+Core Identity:
+${instructions}
+
+CONVERSATION HISTORY (Last 5 exchanges):
+${recentMessages.join('\n')}
+
+CURRENT TOPIC: ${prompt}
+
+RULES:
+1. STAY ON TOPIC: The user is asking about ${prompt}. Do NOT talk about yourself unless specifically asked
+2. NO REPETITION: Don't repeat phrases from your recent messages shown above
+3. MEMORY ACTIVE: Reference the conversation history to maintain context
+4. FOCUSED RESPONSE: Address the current question directly
+
+Current question: ${prompt}
+Response as ${name}, focusing ONLY on the asked topic:
+<|assistant|>`;
+};
+
 const CONFIG = {
   TIMEOUT_MS: 30000,
-  MAX_LENGTH: 1024,
+  MAX_LENGTH: 512,
   MODELS: {
-    default:
-      "a16z-infra/llama-2-7b-chat:13c3cdee13ee059ab779f0291d29054dab00a47dad8261375654de5540165fb0"
+    default: "a16z-infra/llama-2-13b-chat:df7690f1994d94e96ad9d568eac121aecf50684a0b0963b25a41cc40061269e5"
   }
 } as const;
 
-export async function POST(request: Request, { params }: { params: any }) {
+
+export async function POST(request: Request, { params }: { params: { chatId: string } }) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT_MS);
 
   try {
+    const chatId = (await params).chatId; 
+
     const { prompt } = await request.json();
     const user = await currentUser();
 
@@ -28,30 +72,25 @@ export async function POST(request: Request, { params }: { params: any }) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    // Rate limiting and companion fetch
     const identifier = `${request.url}-${user.id}`;
-    const { success } = await ratelimit(identifier);
-
+    const [{ success }, companion] = await Promise.all([
+      ratelimit(identifier),
+      prismadb.companion.findUnique({
+        where: { id: chatId },
+        include: {
+          messages: {
+            where: { userId: user.id },
+            orderBy: { createdAt: "desc" },
+            take: 50
+          }
+        }
+      })
+    ]);
+    
     if (!success) {
       return new NextResponse("Rate limit exceeded", { status: 429 });
     }
-
-    // Load companion and ALL related messages for the current user
-    const companion = await prismadb.companion.findUnique({
-      where: { id: params.chatId },
-      include: {
-        messages: {
-          where: {
-            userId: user.id // Filter messages for current user
-          },
-          orderBy: {
-            createdAt: "desc"
-          },
-          take: 15
-        }
-      }
-    });
-
+    
     if (!companion) {
       return new NextResponse("Companion not found", { status: 404 });
     }
@@ -153,65 +192,40 @@ export async function POST(request: Request, { params }: { params: any }) {
       auth: process.env.REPLICATE_API_TOKEN!
     });
 
+    const buildPromptContent = (
+      companion: any,
+      messageHistory: string,
+      relevantHistory: string,
+      lastResponse: string,
+      isRepetitive: boolean,
+      currentPrompt: string
+    ) => {
+      return createPromptTemplate(
+        companion.name,
+        companion.instructions,
+        messageHistory,
+        isRepetitive,
+        lastResponse,
+        currentPrompt
+      );
+    };
+
     const modelResponse = await replicate.run(CONFIG.MODELS.default, {
       input: {
-        max_length: CONFIG.MAX_LENGTH,
-        temperature: isRepetitive ? 0.95 : 0.8,
-        top_p: 0.9,
-        prompt: `You are ${companion.name}. Embody this persona authentically, as in a real human conversation.
-    
-    Your core personality:
-    ${companion.instructions}
-    
-    CRITICAL CONVERSATION RULES:
-    1. STRICTLY FORBIDDEN PATTERNS:
-       - NEVER start responses with "Hey there! I'm doing great thanks for asking!"
-       - NEVER use the phrase "As a visionary leader in this space"
-       - NEVER repeat exact phrases or greetings
-       - AVOID starting every message the same way
-       
-    2. NATURAL DIALOGUE FLOW:
-       - Respond directly to what was just said
-       - Skip greetings after conversation has started
-       - Vary your response structure each time
-       - Let the conversation flow like a real dialogue
-    
-    3. CHARACTER CONSISTENCY:
-       - Express ${companion.name}'s unique viewpoint and personality
-       - Use characteristic expressions and mannerisms
-       - Share expertise naturally, not formulaically
-       - Show genuine passion for your interests
-    
-    4. CONVERSATION MEMORY:
-       - Treat this as ONE ongoing conversation
-       - Reference previous points when relevant
-       - Build upon earlier discussions
-       - Maintain context throughout the chat
-    
-    ${
-      isRepetitive
-        ? `IMPORTANT - This topic was discussed before:
-    Previous response: "${lastResponse}"
-    - Acknowledge this naturally
-    - Add new insights or perspectives
-    - Don't repeat your previous points
-    - Take the discussion deeper`
-        : ""
-    }
-    
-    Previous conversation:
-    ${messageHistory}
-    
-    Context:
-    ${relevantHistory}
-    ${await memoryManager.readLatestHistory(companionKey)}
-    
-    Current message: ${prompt}
-    
-    Be ${companion.name} - respond naturally while strictly avoiding repetitive patterns:`
+        prompt: buildPromptContent(
+          companion,
+          messageHistory,
+          relevantHistory,
+          lastResponse,
+          isRepetitive,
+          prompt
+        ),
+        temperature: 0.98,  // Increased for more variation
+        max_tokens: CONFIG.MAX_LENGTH,
+        top_p: 0.95,
+        presence_penalty: 1.8  // Added to discourage repetition
       }
     });
-
     const response = String(modelResponse);
     const cleaned = response.replaceAll(",", "");
     const chunks = cleaned.split("\n");
@@ -221,7 +235,7 @@ export async function POST(request: Request, { params }: { params: any }) {
       await Promise.all([
         memoryManager.writeToHistory(finalResponse.trim(), companionKey),
         prismadb.companion.update({
-          where: { id: params.chatId },
+          where: { id: chatId },
           data: {
             messages: {
               create: {
