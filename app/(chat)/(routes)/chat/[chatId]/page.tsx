@@ -3,13 +3,7 @@ import { redirect } from "next/navigation";
 import prismadb from "@/lib/prismadb";
 import ChatClient from "./components/client";
 
-interface ChatIdPageProps {
-  params: {
-    chatId: string
-  }
-}
-
-export default async function ChatIdPage({ params }: ChatIdPageProps) {
+export default async function ChatIdPage({ params }: any) {
   const { userId } = await auth();
   const { chatId } = await params;  // Properly await params
 
