@@ -4,14 +4,8 @@ import Categories from "@/components/categories";
 import prismadb from "@/lib/prismadb";
 import Companions from "@/components/companions";
 
-interface RootPageProps {
-  searchParams: {
-    categoryId?: string;
-    name?: string;
-  }
-}
 
-export default async function RootPage({ searchParams }: RootPageProps) {
+export default async function RootPage({ searchParams }: any) {
   const data = await prismadb.companion.findMany({
     where: {
       categoryId: (await searchParams).categoryId || undefined,
