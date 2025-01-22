@@ -92,7 +92,7 @@ export async function POST(request: Request, { params }: { params: any }) {
       { prompt },
       user
     ] = await Promise.all([
-      params.chatId,
+      (await params).chatId,
       request.json(),
       currentUser()
     ]);
@@ -198,7 +198,7 @@ export async function POST(request: Request, { params }: { params: any }) {
           lastResponse,
           prompt
         ),
-        temperature: 0.7, // Reduced for faster response
+        temperature: 0.5, // Reduced for faster response
         max_tokens: CONFIG.MAX_LENGTH,
         top_p: 0.8,
         presence_penalty: 1.5
