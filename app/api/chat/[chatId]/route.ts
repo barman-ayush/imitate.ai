@@ -23,7 +23,7 @@ const CONFIG = {
 
 export async function POST(
   request: Request,
-  { params }: { params: { chatId: string } }
+  { params }: { params: any }
 ) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT_MS);
