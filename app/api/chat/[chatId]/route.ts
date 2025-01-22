@@ -231,6 +231,8 @@ export async function POST(request: Request, { params }: { params: any}) {
     const chunks = cleaned.split("\n");
     const finalResponse = chunks[0];
 
+    // getting the final response
+
     if (finalResponse?.length > 1) {
       await Promise.all([
         memoryManager.writeToHistory(finalResponse.trim(), companionKey),
